@@ -1,5 +1,8 @@
 # Context & Idea
 
+https://github.com/user-attachments/assets/2cb3a2b5-10b6-4ff7-98fd-5b88b966ffda
+
+
 I'm currently developing a full-stack, cross-platform application for a tourism startup called [Mouja](https://mouja.ma).  
 Mouja offers digital booking services for local businesses that currently lack an online presence, alongside advanced surf forecasting for over 3000 km of the Moroccan coastline.
 

@@ -1,0 +1,11 @@
+name = "mouja-chat-worker"
+main = "src/index.ts"
+compatibility_date = "2025-10-19"
+
+[ai]
+binding = "AI"
+
+[[workflows]]
+name = "surf-advisor"
+binding = "SURF_WORKFLOW"
+class_name = "SurfAdvisorWorkflow"

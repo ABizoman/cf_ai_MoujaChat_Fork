@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mouja AI Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              toura: {
+                primary: '#2EAFE8',
+                secondary: '#123B66',
+                slate: '#22282B',
+              },
+            },
+            fontFamily: {
+              sans: ['"Manrope"', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: rgba(34, 40, 43, 0.18);
+        border-radius: 999px;
+      }
+      textarea {
+        resize: none;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-white text-slate-900 font-sans">
+    <div class="relative min-h-screen overflow-hidden">
+      <span
+        aria-hidden="true"
+        class="pointer-events-none absolute -top-24 -left-32 h-72 w-72 rounded-full bg-gradient-to-br from-sky-100 to-transparent blur-3xl"
+      ></span>
+      <span
+        aria-hidden="true"
+        class="pointer-events-none absolute top-64 -right-48 h-80 w-80 rounded-full bg-gradient-to-br from-sky-100 to-transparent blur-3xl"
+      ></span>
+      <span
+        aria-hidden="true"
+        class="pointer-events-none absolute bottom-72 -left-40 h-80 w-80 rounded-full bg-gradient-to-br from-sky-100 to-transparent blur-3xl"
+      ></span>
+      <span
+        aria-hidden="true"
+        class="pointer-events-none absolute -bottom-12 -right-36 h-80 w-80 rounded-full bg-gradient-to-br from-sky-100 to-transparent blur-3xl"
+      ></span>
+
+      <div class="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 pb-8 pt-6 sm:px-8">
+        <header class="mb-6 flex items-center justify-between">
+          <div class="h-8 w-8"></div>
+          <button
+            id="close-button"
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+            aria-label="Close chat"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              fill="none"
+              class="h-6 w-6"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </header>
+
+        <main class="flex min-h-0 flex-1 flex-col">
+          <div class="mb-6">
+            <p class="text-lg font-semibold text-toura-secondary">Hi, I'm Toura !</p>
+            <h1 class="mt-1 text-3xl font-semibold text-toura-secondary sm:text-4xl">
+              What can I do for you?
+            </h1>
+          </div>
+
+          <section
+            id="chat-thread"
+            class="flex-1 space-y-4 overflow-y-auto rounded-3xl bg-white/60 p-4 pb-24 shadow-[0_10px_60px_-35px_rgba(18,59,102,0.6)] backdrop-blur-sm"
+            aria-live="polite"
+          ></section>
+        </main>
+
+        <footer class="relative -mt-20 sm:-mt-16">
+          <div
+            class="rounded-full border border-sky-100 bg-sky-50/80 p-1.5 shadow-[0_10px_45px_-25px_rgba(2,39,79,0.6)] backdrop-blur-md"
+          >
+            <form
+              id="chat-form"
+              class="flex items-end gap-3 rounded-full border border-sky-100 bg-white px-4 py-2 shadow-sm"
+            >
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100/60">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  class="h-6 w-6 text-toura-primary"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 3v4.5m0 9V21m6.364-12.364-3.182 3.182m-6.364 6.364-3.182 3.182m12.728 0-3.182-3.182m-6.364-6.364L5.636 8.636"
+                  />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <label for="chat-input" class="sr-only">Ask Anything</label>
+                <textarea
+                  id="chat-input"
+                  name="prompt"
+                  rows="1"
+                  maxlength="500"
+                  placeholder="Ask Anything"
+                  class="max-h-36 w-full resize-none border-0 bg-transparent px-1 py-3 text-base font-medium leading-relaxed text-toura-secondary placeholder:text-slate-400 focus:outline-none focus:ring-0"
+                ></textarea>
+              </div>
+              <button
+                id="send-button"
+                type="submit"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-toura-primary text-white shadow-sm transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:bg-slate-300"
+                disabled
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  class="h-5 w-5"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-7.5-15-7.5v6l10 1.5-10 1.5v6z" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <template id="assistant-icon-template">
+      <div class="flex h-9 w-9 items-center justify-center rounded-full border border-sky-200 bg-white shadow-sm">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 33 33"
+          fill="none"
+          class="h-7 w-7 text-toura-primary"
+        >
+          <circle cx="16.5" cy="16.5" r="15.5" stroke="currentColor" stroke-width="1.5" opacity="0.35"></circle>
+          <circle cx="16.5" cy="16.5" r="11.5" stroke="currentColor" stroke-width="1.5" opacity="0.5"></circle>
+          <circle cx="16.5" cy="16.5" r="7.5" stroke="currentColor" stroke-width="1.5" opacity="0.8"></circle>
+          <circle cx="16.5" cy="16.5" r="3.5" fill="currentColor" opacity="0.95"></circle>
+        </svg>
+      </div>
+    </template>
+
+    <script>
+      (function () {
+        const initialAssistantMessage =
+          "Hello! I'm an LLM chat app powered by Cloudflare Workers AI. I'm here to help you find the best surf spot for your next session, I look at the weather, the tide, the swell, the wind, the waves and our spot-specfic guides to give you the best recommendation.";
+
+        const threadEl = document.getElementById('chat-thread');
+        const formEl = document.getElementById('chat-form');
+        const inputEl = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const closeButton = document.getElementById('close-button');
+        const iconTemplate = document.getElementById('assistant-icon-template');
+        const chatHistory = [
+          { role: 'assistant', content: initialAssistantMessage },
+        ];
+
+        let isStreaming = false;
+
+        function createMessageWrapper(role) {
+          const wrapper = document.createElement('div');
+          wrapper.className = role === 'user' ? 'flex justify-end' : 'flex items-start gap-3';
+          return wrapper;
+        }
+
+        function createUserBubble(content) {
+          const bubble = document.createElement('div');
+          bubble.className =
+            'max-w-[85%] rounded-3xl rounded-br-md bg-toura-primary px-4 py-3 text-sm font-medium leading-relaxed text-white shadow-lg';
+          bubble.textContent = content;
+          return bubble;
+        }
+
+        function createAssistantBubble() {
+          const bubble = document.createElement('div');
+          bubble.className =
+            'max-w-[85%] rounded-3xl rounded-bl-md border border-sky-100 bg-white/80 px-4 py-3 text-sm leading-relaxed text-toura-slate shadow-sm backdrop-blur';
+          return bubble;
+        }
+
+        function appendAssistantIcon(target) {
+          if (!iconTemplate?.content) {
+            return;
+          }
+          const icon = iconTemplate.content.firstElementChild.cloneNode(true);
+          target.appendChild(icon);
+        }
+
+        function renderAssistantMarkdown(container, markdown) {
+          if (window.marked && window.DOMPurify) {
+            const html = window.DOMPurify.sanitize(window.marked.parse(markdown, { breaks: true }));
+            container.innerHTML = html;
+          } else {
+            container.textContent = markdown;
+          }
+        }
+
+        function scrollToBottom() {
+          requestAnimationFrame(() => {
+            threadEl.scrollTo({ top: threadEl.scrollHeight, behavior: 'smooth' });
+          });
+        }
+
+        function appendMessage(role, content) {
+          const wrapper = createMessageWrapper(role);
+          let contentEl;
+
+          if (role === 'user') {
+            contentEl = createUserBubble(content);
+            wrapper.appendChild(contentEl);
+          } else {
+            appendAssistantIcon(wrapper);
+            contentEl = createAssistantBubble();
+            if (content) {
+              renderAssistantMarkdown(contentEl, content);
+            } else {
+              const spinner = document.createElement('div');
+              spinner.className = 'flex items-center gap-2 text-slate-500';
+              spinner.innerHTML = '<span class="h-3 w-3 animate-ping rounded-full bg-toura-primary"></span><span class="text-xs font-medium">Thinking...</span>';
+              contentEl.appendChild(spinner);
+            }
+            wrapper.appendChild(contentEl);
+          }
+
+          threadEl.appendChild(wrapper);
+          scrollToBottom();
+          return { wrapper, contentEl };
+        }
+
+        function updateAssistantContent(contentEl, markdown) {
+          contentEl.innerHTML = '';
+          renderAssistantMarkdown(contentEl, markdown);
+        }
+
+        function setFormDisabled(disabled) {
+          isStreaming = disabled;
+          inputEl.disabled = disabled;
+          sendButton.disabled = disabled || !inputEl.value.trim();
+        }
+
+        function autoResize() {
+          inputEl.style.height = 'auto';
+          inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+        }
+
+        function initialize() {
+          appendMessage('assistant', initialAssistantMessage);
+          autoResize();
+          scrollToBottom();
+        }
+
+        closeButton?.addEventListener('click', () => {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = '/';
+          }
+        });
+
+        inputEl.addEventListener('input', () => {
+          sendButton.disabled = isStreaming || !inputEl.value.trim();
+          autoResize();
+        });
+
+        formEl.addEventListener('submit', async event => {
+          event.preventDefault();
+          const rawValue = inputEl.value;
+          const trimmed = rawValue.trim();
+          if (!trimmed || isStreaming) {
+            return;
+          }
+
+          chatHistory.push({ role: 'user', content: trimmed });
+          appendMessage('user', trimmed);
+
+          const { contentEl } = appendMessage('assistant', '');
+          const assistantHistoryEntry = { role: 'assistant', content: '' };
+          chatHistory.push(assistantHistoryEntry);
+
+          inputEl.value = '';
+          autoResize();
+          setFormDisabled(true);
+
+          try {
+            const applyResponseChunk = rawLine => {
+              const line = rawLine.trim();
+              if (!line) {
+                return;
+              }
+              try {
+                const data = JSON.parse(line);
+                if (typeof data.response === 'string') {
+                  assistantHistoryEntry.content += data.response;
+                  updateAssistantContent(contentEl, assistantHistoryEntry.content);
+                }
+              } catch (_error) {
+                // ignore partial chunks
+              }
+            };
+
+            const response = await fetch(window.location.pathname, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ messages: chatHistory.slice(0, -1) }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Request failed with status ' + response.status);
+            }
+
+            const reader = response.body && response.body.getReader ? response.body.getReader() : null;
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            if (reader) {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                  break;
+                }
+                buffer += decoder.decode(value, { stream: true });
+                let newlineIndex = buffer.indexOf('\n');
+                while (newlineIndex !== -1) {
+                  const line = buffer.slice(0, newlineIndex);
+                  buffer = buffer.slice(newlineIndex + 1);
+                  applyResponseChunk(line);
+                  newlineIndex = buffer.indexOf('\n');
+                }
+              }
+              const remaining = buffer.trim();
+              if (remaining) {
+                applyResponseChunk(remaining);
+              }
+            } else {
+              const text = await response.text();
+              const lines = text.split(/\r?\n/);
+              for (const rawLine of lines) {
+                applyResponseChunk(rawLine);
+              }
+            }
+
+            if (!assistantHistoryEntry.content) {
+              assistantHistoryEntry.content = 'Sorry, I was unable to generate a response.';
+              updateAssistantContent(contentEl, assistantHistoryEntry.content);
+            }
+          } catch (error) {
+            console.error('Chat request failed', error);
+            const fallback = 'Sorry, there was an error processing your request.';
+            assistantHistoryEntry.content = fallback;
+            updateAssistantContent(contentEl, fallback);
+          } finally {
+            setFormDisabled(false);
+          }
+        });
+
+        initialize();
+      })();
+    </script>
+  </body>
+</html>
